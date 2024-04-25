@@ -1,0 +1,13 @@
+2024-02-21 10:41:12	/var/www/html/vendor/phpseclib/phpseclib/phpseclib/Crypt/Common/SymmetricKey.php(2595)	phpseclib3\Exception\BadDecryptionException: The ciphertext has an invalid padding length (241) compared to the block size (16)
+  #0 /var/www/html/vendor/phpseclib/phpseclib/phpseclib/Crypt/Common/SymmetricKey.php(1661): phpseclib3\Crypt\Common\SymmetricKey->unpad('@\xA1\xC7\xF3\x8A\x8C\x0F\xDD\x1A\x13rG\x95\tX...')
+  #1 /var/www/html/vendor/phpseclib/phpseclib/phpseclib/Crypt/Rijndael.php(1034): phpseclib3\Crypt\Common\SymmetricKey->decrypt('eA\xCDk\x05\xAFr\x96@@\x07%I[a...')
+  #2 /var/www/html/inc/auth.php(470): phpseclib3\Crypt\Rijndael->decrypt('eA\xCDk\x05\xAFr\x96@@\x07%I[a...')
+  #3 /var/www/html/inc/auth.php(324): auth_decrypt('B\xEE\x8Eb_n\x18\x0Ez*-\x92?\x87O...', '7f2961940d2d4a5...')
+  #4 /var/www/html/inc/auth.php(232): auth_login('serg', 'B\xEE\x8Eb_n\x18\x0Ez*-\x92?\x87O...', false, false)
+  #5 [internal function]: auth_login_wrapper(Array)
+  #6 /var/www/html/inc/Extension/Event.php(134): call_user_func_array('auth_login_wrap...', Array)
+  #7 /var/www/html/inc/Extension/Event.php(200): dokuwiki\Extension\Event->trigger('auth_login_wrap...', true)
+  #8 /var/www/html/inc/auth.php(114): dokuwiki\Extension\Event::createAndTrigger('AUTH_LOGIN_CHEC...', Array, 'auth_login_wrap...')
+  #9 /var/www/html/inc/init.php(238): auth_setup()
+  #10 /var/www/html/lib/exe/fetch.php(15): require_once('/var/www/html/i...')
+  #11 {main}

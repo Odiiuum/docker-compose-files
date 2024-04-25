@@ -1,0 +1,49 @@
+version: '3.8'
+services:
+
+  zabbix-server:
+    extends:
+      file: compose_zabbix_components.yaml
+      service: server-mysql
+    image: "${ZABBIX_SERVER_MYSQL_IMAGE}:${ZABBIX_UBUNTU_IMAGE_TAG}${ZABBIX_IMAGE_TAG_POSTFIX}"
+    depends_on:
+      - mysql-server
+
+  zabbix-web-nginx-mysql:
+    extends:
+      file: compose_zabbix_components.yaml
+      service: web-nginx-mysql
+    image: "${ZABBIX_WEB_NGINX_MYSQL_IMAGE}:${ZABBIX_UBUNTU_IMAGE_TAG}${ZABBIX_IMAGE_TAG_POSTFIX}"
+    depends_on:
+      - mysql-server
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.zabbix.entrypoints=web"
+      - "traefik.http.routers.zabbix.rule=Host(`zabbix.${ROOT_DOMAIN}`)"
+      - "traefik.http.routers.zabbix.service=zabbix-srv"
+      - "traefik.http.services.zabbix-srv.loadbalancer.server.port=8080"
+
+  mysql-server:
+    extends:
+      file: compose_databases.yaml
+      service: mysql-server
+
+  db-data-mysql:
+    extends:
+      file: compose_databases.yaml
+      service: db-data-mysql
+
+networks:
+  traefik-network:
+    external: true
+
+secrets:
+  MYSQL_USER:
+    file: ${ENV_VARS_DIRECTORY}/.MYSQL_USER
+  MYSQL_PASSWORD:
+    file: ${ENV_VARS_DIRECTORY}/.MYSQL_PASSWORD
+  MYSQL_ROOT_USER:
+    file: ${ENV_VARS_DIRECTORY}/.MYSQL_ROOT_USER
+  MYSQL_ROOT_PASSWORD:
+    file: ${ENV_VARS_DIRECTORY}/.MYSQL_ROOT_PASSWORD
+

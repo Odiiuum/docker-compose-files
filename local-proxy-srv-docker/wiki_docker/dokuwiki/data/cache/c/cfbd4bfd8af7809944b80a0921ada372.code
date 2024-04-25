@@ -1,0 +1,1 @@
+qemu-img resize chr-<span class="nu0">7.14</span>.qcow2 +1G

@@ -1,0 +1,22 @@
+entryPoints:
+  web:
+    address: ":80"
+  web-secure:
+    address: ":443"
+  zabbix_agent2:
+    address: ":10051"
+
+providers:
+  docker:
+    endpoint: "unix:///var/run/docker.sock"
+    exposedByDefault: false
+  file:
+    directory: /custom
+    watch: true
+
+api:
+  dashboard: true
+
+log:
+  filepath: /logs/traefik.log
+  level: INFO

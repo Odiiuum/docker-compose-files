@@ -1,0 +1,1 @@
+apt <span class="kw2">install</span> <span class="kw2">zip</span> <span class="re5">-y</span>

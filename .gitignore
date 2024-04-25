@@ -1,0 +1,16 @@
+*.db
+*.crt*
+*.key*
+*.exe*
+*.yaml
+*.metadata
+*.json
+*.repo
+*.idx
+*.meta
+*.env
+.htpasswd
+*.pem
+*.pub
+*.png
+config.py

@@ -1,0 +1,16 @@
+<span class="co3">version</span><span class="sy2">: </span><span class="st0">&quot;3&quot;</span><span class="co4">
+services</span>:<span class="co4">
+    shinobi</span>:<span class="co3">
+        image</span><span class="sy2">: </span>registry.gitlab.com/shinobi-systems/shinobi:dev<span class="co3">
+        container_name</span><span class="sy2">: </span>Shinobi<span class="co4">
+        volumes</span><span class="sy2">:
+</span>           - ./data/Shinobi/config:/config          <span class="co1">#required</span>
+           - ./data/Shinobi/customAutoLoad:/home/Shinobi/libs/customAutoLoad          <span class="co1">#required</span>
+           - ./data/Shinobi/database:/var/lib/mysql          <span class="co1">#required</span>
+           - ./data/Shinobi/videos:/home/Shinobi/videos          <span class="co1">#required</span>
+           - ./data/Shinobi/plugins:/home/Shinobi/plugins          <span class="co1">#required</span>
+           - /dev/shm/Shinobi/streams:/dev/shm/streams          <span class="co1">#required</span>
+           <span class="co1">#- ./data/records          #optional</span><span class="co4">
+        ports</span><span class="sy2">:
+</span>           - 8080:8080<span class="co3">
+        restart</span><span class="sy2">: </span>unless-stopped

@@ -1,0 +1,1 @@
+<span class="kw2">sudo</span> docker compose up <span class="re5">-d</span>

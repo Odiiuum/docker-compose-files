@@ -1,0 +1,23 @@
+networks:
+  traefik-network:
+    external: true
+
+services:
+  web:
+    build:
+      context: web/
+    container_name: web-apache
+    restart: always
+    networks:
+      traefik-network:
+        ipv4_address: 10.0.0.254
+    volumes:
+      - ./dokuwiki:/var/www/html
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.wiki.entrypoints=${WEB}"
+      - "traefik.http.routers.wiki.rule=Host(`wiki.${ROOT_DOMAIN}`)"
+      - "traefik.http.services.wiki-srv.loadbalancer.server.port=80"
+
+
+

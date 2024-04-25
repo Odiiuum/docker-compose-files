@@ -1,0 +1,114 @@
+===== Установка и настройка Shinobi Video с помощью Docker Compose =====
+
+Здесь будет написано, как установить сервер видеонаблюдения на основе Open-Source решения Shinobi с помощью Docker Compose.
+Перед началом установки Shinobi необходимо обновить пакеты, установить Docker и Docker Compose. Здесь этого делать я не буду.
+
+==== Создание и настройка файла Docker Compose ====
+
+После того, как Docker будет установлен, нужно создать корневую директорию для самого Shinobi (в данному случае я создаю папку в $HOME)  и папку для конфигурационных данных:
+<code bash>
+mkdir shinobi_nvr 
+mkdir shinobi_nvr/data 
+</code>
+
+Следующим шагом будет создание файла компоновки docker-compose.yml.
+<file yaml docker-compose.yml> 
+version: "3"
+services:
+    shinobi:
+        image: registry.gitlab.com/shinobi-systems/shinobi:dev
+        container_name: Shinobi
+        volumes:
+           - ./data/Shinobi/config:/config          #required
+           - ./data/Shinobi/customAutoLoad:/home/Shinobi/libs/customAutoLoad          #required
+           - ./data/Shinobi/database:/var/lib/mysql          #required
+           - ./data/Shinobi/videos:/home/Shinobi/videos          #required
+           - ./data/Shinobi/plugins:/home/Shinobi/plugins          #required
+           - /dev/shm/Shinobi/streams:/dev/shm/streams          #required
+           #- ./data/records:/home/Shinobi/records          #optional (add new folder for stream records)
+        ports:
+           - 80:8080
+        restart: unless-stopped
+</file>
+
+Сохраняем этот файл, запускаем с помощью следующей команды:
+<code bash>
+sudo docker compose up -d
+</code>
+
+==== Создание нового пользователя для доступа к Shinobi ====
+
+После после загрузки и запуска контейнера заходим на веб-интерфейс Shinobi-сервера по адресу http://ip-or-domain/super
+
+Логин и пароль по умолчанию для авторизации:
+<code>
+Login: admin@shinobi.video
+Password: admin
+</code>
+
+Откроется страница конфигурации Shinobi. На данном этапе нужно создать нового пользователя. Что бы это сделать, нажать кнопку <Add>,  та заполнить поля:
+<code>
+Email
+Password
+Password Again
+</code>
+
+и нажать клавишу <Save>
+
+{{ :shinobi_new_accounts.png?nolink |}}
+
+Теперь мы можем войти непосредственно в сам веб-интерфейс Shinobi для добавления новых камер (здесь они называются мониторы).
+
+==== Добавление новых мониторов ====
+
+Что бы войти на веб-интерфейс Shinobi, нужно перейти по адресу http://ip-or-domain .
+
+Для добавление первой камеры первым делом вам нужно узнать RTSP-ссылку для вашей камеры, чаще всего она начинается следующим образом:
+<code>
+rtsp://LOGIN:PASSWORD@XXX.XXX.XXX.XXX:YY/path/to/rtsp/stream
+</code>
+
+Что бы узнать точную RTSP-ссылку можно поискать на сайте производителя, либо воспользоваться [[https://hub.shinobi.video/explore|данной]] страницей с описанием и настройками для поддерживаемых камер.
+
+{{ :shinobi_rtsp_settings.png?nolink |}}
+
+Исходя из этих данных, для камер производителя Imou полная RTSP-ссылка будет выглядеть следующим образом:
+<code>
+rtsp://admin:admin@192.168.0.2:554/cam/realmonitor?channel=1&subtype=0&unicast=true&proto=Onvif
+</code>
+
+Следующим шагом будет непосредственно добавление камеры, для этого нужно перейти в раздел <Settings Monitor> и указать минимальные параметры для работы. Я не буду перечисливать все параметры, укажу  только основные, которые использую я. Так же те параметры, которые были найдены для конкретного производителя камеры, пригодятся далее, на примере камеры Imou.
+
+== Identity ==
+<code>
+Mode = Record # другие параметры - Disabled, Watch-Only, Record, Idle
+Name = Random Name # имя, которое будет присвоено камере
+Tags = Random Tags # Будет группировать мониторы на основе общего тега
+</code>
+
+== Connection==
+<code>
+Input Type = H.264 / H.265 / H.265+ # метод, который будет использоваться для видеопотока
+Full URL Path = rtsp://LOGIN:PASSWORD@XXX.XXX.XXX.XXX:YY/path/to/rtsp/stream # нашли это ранее
+ONVIF = True/False # если камера с поддержкой ONVIF, можно указать этот параметр
+</code>
+
+== Input==
+<code>
+Accelerator =Yes # согласно настройкам, найденным ранее
+Acceleration Engine  # согласно настройкам, найденным ранее
+Video Decoder  # согласно настройкам, найденным ранее
+</code>
+
+== Stream==
+<code>
+Stream Type = Poseidon  # согласно настройкам, найденным ранее
+Video Codec = copy  # согласно настройкам, найденным ранее
+Audio Codec = copy  # согласно настройкам, найденным ранее
+</code>
+
+После ввода всех данных, сохраняем текущий монитор. Новый монитор должен отобразится на вкладке Monitor и на вкладке Live Grid.
+
+{{ :shinobi_live_grid.png?nolink&600 |}}
+
+На этом можно считать законченной настройку и добавления новых мониторов на Shinobi-сервер

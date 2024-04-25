@@ -1,0 +1,249 @@
+
+<h2 class="sectionedit1" id="установка_и_настройка_mikrotik_routeros_chr_на_proxmox">Установка и настройка MikroTik RouterOS CHR на Proxmox</h2>
+<div class="level2">
+
+</div>
+<!-- EDIT{&quot;target&quot;:&quot;section&quot;,&quot;name&quot;:&quot;\u0423\u0441\u0442\u0430\u043d\u043e\u0432\u043a\u0430 \u0438 \u043d\u0430\u0441\u0442\u0440\u043e\u0439\u043a\u0430 MikroTik RouterOS CHR \u043d\u0430 Proxmox&quot;,&quot;hid&quot;:&quot;\u0443\u0441\u0442\u0430\u043d\u043e\u0432\u043a\u0430_\u0438_\u043d\u0430\u0441\u0442\u0440\u043e\u0439\u043a\u0430_mikrotik_routeros_chr_\u043d\u0430_proxmox&quot;,&quot;codeblockOffset&quot;:0,&quot;secid&quot;:1,&quot;range&quot;:&quot;1-89&quot;} -->
+<h3 class="sectionedit2" id="подготовка_proxmox_к_установке_mikrotik_chr">Подготовка Proxmox к установке MikroTik CHR</h3>
+<div class="level3">
+
+<p>
+После обычной установки PVE первым делом нужно убрать производственные репозитории. 
+</p>
+
+<p>
+Файлы с репозиториями находятся в /etc/apt/source.list.d/
+</p>
+
+<p>
+Там существуют два файла:
+</p>
+<pre class="code">pve-enterprise.list
+ceph.list</pre>
+
+<p>
+В этих файлах нужно закомментировать все, что в них находится. И добавить в файл <em> /etc/apt/source.list </em> следующее:
+</p>
+<pre class="code">deb http://download.proxmox.com/debian/pve bookworm pve-no-subscription</pre>
+
+<p>
+После этого просто обновляем пакеты:
+</p>
+<pre class="code bash">apt update <span class="sy0">&amp;&amp;</span> apt upgrade <span class="re5">-y</span></pre>
+
+<p>
+и устанавливаем нужный пакет, который пригодится для разархивирования образа диска CHR:
+</p>
+<pre class="code bash">apt <span class="kw2">install</span> <span class="kw2">zip</span> <span class="re5">-y</span></pre>
+
+<p>
+Так же сразу создадим несколько виртуальных сетевых интерфейсов. для этого переходим на веб-интерфейс Proxmox по адресу <a href="https://192.168.0.100:8006" class="urlextern" title="https://192.168.0.100:8006" rel="ugc nofollow">https://192.168.0.100:8006</a>, который был указан во время <a href="/doku.php?id=instructions:install_proxmox" class="wikilink2" title="instructions:install_proxmox" rel="nofollow" data-wiki-id="instructions:install_proxmox">установки Proxmox</a>. Переходим в раздел «Система - Сеть». Здесь будет следующие интерфейсы.
+</p>
+
+<p>
+<img src="/lib/exe/fetch.php?w=600&amp;tok=be513b&amp;media=instructions:%D0%B8%D0%B7%D0%BE%D0%B1%D1%80%D0%B0%D0%B6%D0%B5%D0%BD%D0%B8%D0%B5_2024-03-04_113543960.png" class="mediacenter" loading="lazy" alt="" width="600" />
+</p>
+
+<p>
+Нажимаем на «Создать - Linux Bridge», оставляем все поля пустые по умолчанию. Создаться новый сетевой интерфейс, дальше нужно применить эту конфигурацию, нажав на клавишу «Применить конфигурацию». Итоговый результат показан на скриншоте.
+</p>
+
+<p>
+<img src="/lib/exe/fetch.php?w=600&amp;tok=1a0162&amp;media=instructions:%D0%B8%D0%B7%D0%BE%D0%B1%D1%80%D0%B0%D0%B6%D0%B5%D0%BD%D0%B8%D0%B5_2024-03-04_113938970.png" class="mediacenter" loading="lazy" alt="" width="600" />
+</p>
+
+<p>
+Теперь можно приступить к установке Mikrotik Cloud Hosted Router на гипервизор Proxmox.
+</p>
+
+</div>
+<!-- EDIT{&quot;target&quot;:&quot;section&quot;,&quot;name&quot;:&quot;\u041f\u043e\u0434\u0433\u043e\u0442\u043e\u0432\u043a\u0430 Proxmox \u043a \u0443\u0441\u0442\u0430\u043d\u043e\u0432\u043a\u0435 MikroTik CHR&quot;,&quot;hid&quot;:&quot;\u043f\u043e\u0434\u0433\u043e\u0442\u043e\u0432\u043a\u0430_proxmox_\u043a_\u0443\u0441\u0442\u0430\u043d\u043e\u0432\u043a\u0435_mikrotik_chr&quot;,&quot;codeblockOffset&quot;:0,&quot;secid&quot;:2,&quot;range&quot;:&quot;90-2305&quot;} -->
+<h3 class="sectionedit3" id="создание_виртуальной_машины_и_подготовка_образа_mikrotik_chr">Создание виртуальной машины и подготовка образа MikroTik CHR</h3>
+<div class="level3">
+
+<p>
+Перед началом загрузки и создания шаблона виртуальной машины, необходимо для начала ее создать. Переходим в веб-интерфейс PVE
+</p>
+
+<p>
+Создаём виртуальную машину. Задаем ей имя.
+</p>
+
+<p>
+<img src="/lib/exe/fetch.php?w=600&amp;tok=05fc77&amp;media=instructions:%D0%B8%D0%B7%D0%BE%D0%B1%D1%80%D0%B0%D0%B6%D0%B5%D0%BD%D0%B8%D0%B5_2024-03-01_172153978.png" class="mediacenter" loading="lazy" alt="" width="600" />
+</p>
+
+<p>
+Нажимаем далее и переходим в раздел выбора операционной системы и выбираем пункт <em>Do not use any media</em>. Образ системы добавим позже.
+</p>
+
+<p>
+<img src="/lib/exe/fetch.php?w=600&amp;tok=f99f58&amp;media=instructions:%D0%B8%D0%B7%D0%BE%D0%B1%D1%80%D0%B0%D0%B6%D0%B5%D0%BD%D0%B8%D0%B5_2024-03-01_172346151.png" class="mediacenter" loading="lazy" alt="" width="600" />
+</p>
+
+<p>
+Далее на вкладке <em>System</em> оставляем по умолчанию. На вкладке <em>Disk</em> удаляем диск по умолчанию.
+</p>
+
+<p>
+<img src="/lib/exe/fetch.php?w=600&amp;tok=719cd5&amp;media=instructions:%D0%B8%D0%B7%D0%BE%D0%B1%D1%80%D0%B0%D0%B6%D0%B5%D0%BD%D0%B8%D0%B5_2024-03-01_172924182.png" class="mediacenter" loading="lazy" alt="" width="600" />
+</p>
+
+<p>
+На вкладке <em>CPU</em> и <em>Memory</em> выбираем нужное количество виртуальных процессоров и количество оперативной памяти, которая будет доступная виртуальной машине.
+</p>
+
+<p>
+На вкладке <em>Network</em> ставим, что не будем использовать сетевое устройство, его добавим позже.
+</p>
+
+<p>
+<img src="/lib/exe/fetch.php?w=600&amp;tok=f6bcea&amp;media=instructions:%D0%B8%D0%B7%D0%BE%D0%B1%D1%80%D0%B0%D0%B6%D0%B5%D0%BD%D0%B8%D0%B5_2024-03-01_173133639.png" class="mediacenter" loading="lazy" alt="" width="600" />
+</p>
+
+<p>
+Далее подтверждаем введенную информацию. На этом этапе мы закончили создание виртуальной машины, теперь нужно загрузить необработанный образ CHR на гипервизор. Для этого нужно зайти <a href="https://mikrotik.com/download" class="urlextern" title="https://mikrotik.com/download" rel="ugc nofollow"> сюда </a>, загрузить нужную версию ОС. На момент написания, актуальная версия 7.14 Stable, ее и будем загружать. Копируем ссылку из строки <strong>Raw disk image</strong>.
+</p>
+<pre class="code">https://download.mikrotik.com/routeros/7.14/chr-7.14.img.zip</pre>
+
+<p>
+<img src="/lib/exe/fetch.php?w=600&amp;tok=2c8bf0&amp;media=instructions:install_chr_proxmox_download.png" class="mediacenter" loading="lazy" alt="" width="600" />
+</p>
+
+<p>
+На Proxmox, к которому мы подключены через удаленную консоль, либо <a href="/doku.php?id=terms:ssh" class="wikilink2" title="terms:ssh" rel="nofollow" data-wiki-id="terms:ssh">SSH</a>, переходим в директорию <em> /var/lib/vz/images </em>. Здесь будет директория созданной ранее виртуальной машиной, в моем случае ее имя будет <em> 100 </em>. Если ее нет, то нужно создать этот каталог:
+</p>
+<pre class="code bash"><span class="kw2">mkdir</span> <span class="sy0">/</span>var<span class="sy0">/</span>lib<span class="sy0">/</span>vz<span class="sy0">/</span>images<span class="sy0">/</span><span class="nu0">100</span></pre>
+
+<p>
+Далее скачиваем образ CHR с помощью следующей команды:
+</p>
+<pre class="code bash"><span class="kw2">wget</span> https:<span class="sy0">//</span>download.mikrotik.com<span class="sy0">/</span>routeros<span class="sy0">/</span><span class="nu0">7.14</span><span class="sy0">/</span>chr-<span class="nu0">7.14</span>.img.zip</pre>
+
+<p>
+Распаковываем архив:
+</p>
+<pre class="code bash"><span class="kw2">unzip</span> chr-<span class="nu0">7.14</span>.img.zip</pre>
+
+<p>
+Затем конвертируем образ img в образ формата qcow2:
+</p>
+<pre class="code bash">qemu-img convert <span class="re5">-f</span> raw  <span class="re5">-O</span> qcow2 chr-<span class="nu0">7.14</span>.qcow2</pre>
+
+<p>
+У нас появится конвертированный образ системы, остается только добавить его к виртуальной машине. Так же, размер созданного диска будет размером в 40М, если этого недостаточно, его можно увеличить следующим образом:
+</p>
+<pre class="code bash">qemu-img resize chr-<span class="nu0">7.14</span>.qcow2 +1G</pre>
+
+<p>
+Теперь можно присоединить готовый образ к виртуальной машине (образ должен находится по пути <em> /var/lib/vz/images/100/chr-7.14.qcow2 </em> :
+</p>
+<pre class="code bash">qm <span class="kw1">set</span>  <span class="nu0">100</span> <span class="re5">--ide2</span> local:<span class="nu0">100</span><span class="sy0">/</span>chr-<span class="nu0">7.14</span>.qcow2</pre>
+
+<p>
+При успешном добавлении увидим надпись <strong>update VM 100: -ide2 local:100/chr-7.14.qcow2</strong>.
+</p>
+
+<p>
+Удаляем все временные файлы, такие как архив и необработанный образ в формате img:
+</p>
+<pre class="code bash"><span class="kw2">rm</span> chr-<span class="nu0">7.14</span>.img chr-<span class="nu0">7.14</span>.img.zip</pre>
+
+<p>
+Теперь мы можем возвращаться на веб-интерфейс PVE и закончить установку CHR.
+</p>
+
+</div>
+<!-- EDIT{&quot;target&quot;:&quot;section&quot;,&quot;name&quot;:&quot;\u0421\u043e\u0437\u0434\u0430\u043d\u0438\u0435 \u0432\u0438\u0440\u0442\u0443\u0430\u043b\u044c\u043d\u043e\u0439 \u043c\u0430\u0448\u0438\u043d\u044b \u0438 \u043f\u043e\u0434\u0433\u043e\u0442\u043e\u0432\u043a\u0430 \u043e\u0431\u0440\u0430\u0437\u0430 MikroTik CHR&quot;,&quot;hid&quot;:&quot;\u0441\u043e\u0437\u0434\u0430\u043d\u0438\u0435_\u0432\u0438\u0440\u0442\u0443\u0430\u043b\u044c\u043d\u043e\u0439_\u043c\u0430\u0448\u0438\u043d\u044b_\u0438_\u043f\u043e\u0434\u0433\u043e\u0442\u043e\u0432\u043a\u0430_\u043e\u0431\u0440\u0430\u0437\u0430_mikrotik_chr&quot;,&quot;codeblockOffset&quot;:4,&quot;secid&quot;:3,&quot;range&quot;:&quot;2306-6793&quot;} -->
+<h3 class="sectionedit4" id="настройка_виртуальной_машины_mikrotik_chr">Настройка виртуальной машины MikroTik CHR</h3>
+<div class="level3">
+
+<p>
+Переходим в веб-интерфейс и открываю созданную ранее виртуальную машину.
+</p>
+
+<p>
+<img src="/lib/exe/fetch.php?w=600&amp;tok=4b5622&amp;media=instructions:%D0%B8%D0%B7%D0%BE%D0%B1%D1%80%D0%B0%D0%B6%D0%B5%D0%BD%D0%B8%D0%B5_2024-03-04_112727840.png" class="mediacenter" loading="lazy" alt="" width="600" />
+</p>
+
+<p>
+Во вкладке оборудование должен отобразиться раньше добавленный диск CHR. Так же не забываем добавить сетевые интерфейсы. Итоговый результат на картинке.
+</p>
+
+<p>
+<img src="/lib/exe/fetch.php?w=600&amp;tok=94b1d6&amp;media=instructions:%D0%B8%D0%B7%D0%BE%D0%B1%D1%80%D0%B0%D0%B6%D0%B5%D0%BD%D0%B8%D0%B5_2024-03-04_114134610.png" class="mediacenter" loading="lazy" alt="" width="600" />
+</p>
+
+<p>
+Еще нужно удостовериться, что в случае перезагрузки самого гипервизора, CHR будет стартовать автоматически, иначе мы не сможем получить доступ к самому гипервизору.
+</p>
+
+<p>
+Перед первый запуском виртуальной машины лучше сделать шаблон виртуальной машины, копируем виртуальную машину, выбираем полное клонирование.
+</p>
+
+<p>
+<img src="/lib/exe/fetch.php?w=600&amp;tok=ed2584&amp;media=instructions:%D0%B8%D0%B7%D0%BE%D0%B1%D1%80%D0%B0%D0%B6%D0%B5%D0%BD%D0%B8%D0%B5_2024-03-04_114658699.png" class="mediacenter" loading="lazy" alt="" width="600" />
+</p>
+
+<p>
+Теперь можно приступать к настройке непосредственно CHR и замене интерфейсов. Это нужно для того, что бы CHR выступал маршрутизирующим устройством, NATом, фаерволлом. Вот приблизительная как это будет выглядеть на самом деле.
+</p>
+
+<p>
+<a href="/lib/exe/detail.php?id=instructions%3Ainstall_chr_proxmox&amp;media=instructions:default-network-setup-routed.svg" class="media" title="instructions:default-network-setup-routed.svg"><img src="/lib/exe/fetch.php?media=instructions:default-network-setup-routed.svg" class="mediacenter" loading="lazy" alt="" /></a>
+</p>
+
+<p>
+На схеме видно vmbr0 - это основной интерфейс, которые создается по умолчанию при установке PVE. Так же он связан с физическим интерфейсом eno0.
+VM100 будет выступать в роли маршрутизатора, значит нам нужно подменить интерфейсы таким образом: мы убираем адресацию с внешнего bridge vmbr0, далее на созданный vmbr1 назначаем адресацию непосредственно самого PVE, он будет находится на этом интерфейсе.
+</p>
+
+<p>
+Для этого нужно перейти в консоль PVE, изменяем файл <em> /etc/network/interfaces </em> следующим образом.
+</p>
+
+<p>
+<img src="/lib/exe/fetch.php?w=600&amp;tok=139d63&amp;media=instructions:%D0%B8%D0%B7%D0%BE%D0%B1%D1%80%D0%B0%D0%B6%D0%B5%D0%BD%D0%B8%D0%B5_2024-03-05_110946008.png" class="mediacenter" loading="lazy" alt="" width="600" />. Сохраняем файл, но пока что не применяем настройки.
+</p>
+
+<p>
+Далее запускаем нашу виртуальную машину, переходим в консоль и настраиваем ее. Пароль по умолчанию <strong> admin </strong>, пароль <strong>пустой</strong>
+</p>
+
+<p>
+Здесь мы назначаем пока еще не проброшенному интерфейсу ether1 внешний адрес PVE и создаем локальную адресацию для интерфейса ether2.
+</p>
+<pre class="code">ip address add interfaces=ether1 address=192.168.70.12/24
+ip address add interfaces=ether2 address=192.168.80.2/24</pre>
+
+<p>
+Далее отключаем правило, которое отвечает за DHCP-client, так как адресация у нас назначается вручную.
+</p>
+<pre class="code">ip dhcp-client disable ether1</pre>
+
+<p>
+После этого нам нужно добавить правило NAT masquerade.
+</p>
+<pre class="code">ip firewall/nat add action=masquerade out-interface=ether1 chain=srcnat</pre>
+
+<p>
+И наконец, добавляем правило глобальное правило маршрутизации к шлюзу по умолчанию.
+</p>
+<pre class="code">ip route add dst-address=0.0.0.0/0 gateway=192.168.70.1 distance=1</pre>
+
+<p>
+Для проверки веденых параметров можно использовать команду <strong>export</strong>, которая выведет все существующие правила и настройки.
+</p>
+
+<p>
+<img src="/lib/exe/fetch.php?w=600&amp;tok=64a783&amp;media=%D0%B8%D0%B7%D0%BE%D0%B1%D1%80%D0%B0%D0%B6%D0%B5%D0%BD%D0%B8%D0%B5_2024-03-05_112116989.png" class="mediacenter" loading="lazy" alt="" width="600" />
+</p>
+
+<p>
+На этом настройку можно считать законченной, остается только применить сетевые настройки в консоли PVE.
+</p>
+<pre class="code">ifreload -a</pre>
+
+</div>
+<!-- EDIT{&quot;target&quot;:&quot;section&quot;,&quot;name&quot;:&quot;\u041d\u0430\u0441\u0442\u0440\u043e\u0439\u043a\u0430 \u0432\u0438\u0440\u0442\u0443\u0430\u043b\u044c\u043d\u043e\u0439 \u043c\u0430\u0448\u0438\u043d\u044b MikroTik CHR&quot;,&quot;hid&quot;:&quot;\u043d\u0430\u0441\u0442\u0440\u043e\u0439\u043a\u0430_\u0432\u0438\u0440\u0442\u0443\u0430\u043b\u044c\u043d\u043e\u0439_\u043c\u0430\u0448\u0438\u043d\u044b_mikrotik_chr&quot;,&quot;codeblockOffset&quot;:12,&quot;secid&quot;:4,&quot;range&quot;:&quot;6794-&quot;} -->

@@ -1,0 +1,118 @@
+version: '3.9'
+
+networks:
+  traefik-network:
+    external: true
+
+volumes:
+  yacht-data:
+
+########################### EXTENSION FIELDS ###########################
+
+x-common-keys-core: &common-keys-core
+  security_opt:
+    - no-new-privileges:true
+  restart: always
+ 
+x-common-keys-apps: &common-keys-apps
+  security_opt:
+    - no-new-privileges:true
+  restart: unless-stopped
+
+########################### SERVICES ###########################
+
+services:
+ 
+  traefik:
+    <<: *common-keys-core
+    image: traefik:latest
+    container_name: traefik
+    networks:
+      traefik-network:
+    environment:
+      - ROOT_DOMAIN
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik/traefik.yml:/traefik.yml
+      - ./custom:/custom
+      - ./logs:/logs
+      - ./traefik/.htpasswd:/.htpasswd
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik.entrypoints=${WEB}, zabbix_agent2"
+      - "traefik.http.routers.traefik.rule=Host(`traefik.${ROOT_DOMAIN}`)"
+      - "traefik.http.routers.traefik.service=api@internal"
+      - "traefik.http.routers.traefik.middlewares=auth@file"
+      - "traefik.http.services.traefik-srv.loadbalancer.server.port=8080"
+      #Homepage labels
+      - homepage.group=Network
+      - homepage.name=Traefik
+      - homepage.icon=traefik.svg
+      - homepage.href=https://traefik.${ROOT_DOMAIN}
+      - homepage.description=Reverse-proxy
+      - homepage.siteMonitor=https://traefik.${ROOT_DOMAIN}
+
+  homepage:
+    image: ghcr.io/gethomepage/homepage:latest
+    container_name: homepage
+    <<: *common-keys-apps
+    networks:
+      traefik-network:
+    volumes:
+      - ./homepage/config:/app/config 
+      - /var/run/docker.sock:/var/run/docker.sock
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.homepage.entrypoints=${WEB}"
+      - "traefik.http.routers.homepage.rule=Host(`${ROOT_DOMAIN}`)"
+      - "traefik.http.routers.homepage.middlewares=auth@file"
+      - "traefik.http.services.homepage-srv.loadbalancer.server.port=3000"
+
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: portainer
+    command: -H unix:///var/run/docker.sock
+    <<: *common-keys-core
+    networks:
+      traefik-network:
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./portainer/data:/data
+    labels:
+      # Frontend
+      - "traefik.enable=true"
+      - "traefik.http.routers.portainer-front.entrypoints=${WEB}"
+      - "traefik.http.routers.portainer-front.rule=Host(`portainer.${ROOT_DOMAIN}`)"
+      - "traefik.http.routers.portainer-front.service=portainer-front-srv"
+      - "traefik.http.services.portainer-front-srv.loadbalancer.server.port=9000"
+      # Edge
+      - "traefik.http.routers.portainer-edge.entrypoints=${WEB}"
+      - "traefik.http.routers.portainer-edge.rule=Host(`edge.${ROOT_DOMAIN}`)"
+      - "traefik.http.routers.portainer-edge.service=portainer-edge-srv"
+      - "traefik.http.services.portainer-edge-srv.loadbalancer.server.port=8000"
+      #Homepage labels
+      - homepage.group=Management
+      - homepage.name=Portrainer
+      - homepage.icon=portainer.svg
+      - homepage.href=http://portainer.${ROOT_DOMAIN}
+      - homepage.description=Container Management
+      - homepage.siteMonitor=http://portainer.${ROOT_DOMAIN}
+
+  filebrowser:
+    image: hurlenko/filebrowser
+    <<: *common-keys-apps
+    container_name: filebrowser
+    networks:
+      traefik-network:
+    volumes:
+      - ./filebrowser/data:/data
+      - ./filebrowser/config:/config
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.filebrowser.entrypoints=${WEB}"
+      - "traefik.http.routers.filebrowser.rule=Host(`file.${ROOT_DOMAIN}`)"
+      - "traefik.http.routers.filebrowser.service=filebrowser-srv"
+      - "traefik.http.services.filebrowser-srv.loadbalancer.server.port=8080"

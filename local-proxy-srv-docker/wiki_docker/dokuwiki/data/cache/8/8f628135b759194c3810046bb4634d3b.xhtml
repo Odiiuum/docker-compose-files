@@ -1,0 +1,159 @@
+
+<h2 class="sectionedit1" id="установка_и_настройка_shinobi_video_с_помощью_docker_compose">Установка и настройка Shinobi Video с помощью Docker Compose</h2>
+<div class="level2">
+
+<p>
+Здесь будет написано, как установить сервер видеонаблюдения на основе Open-Source решения Shinobi с помощью Docker Compose.
+Перед началом установки Shinobi необходимо обновить пакеты, установить Docker и Docker Compose. Здесь этого делать я не буду.
+</p>
+
+</div>
+<!-- EDIT{&quot;target&quot;:&quot;section&quot;,&quot;name&quot;:&quot;\u0423\u0441\u0442\u0430\u043d\u043e\u0432\u043a\u0430 \u0438 \u043d\u0430\u0441\u0442\u0440\u043e\u0439\u043a\u0430 Shinobi Video \u0441 \u043f\u043e\u043c\u043e\u0449\u044c\u044e Docker Compose&quot;,&quot;hid&quot;:&quot;\u0443\u0441\u0442\u0430\u043d\u043e\u0432\u043a\u0430_\u0438_\u043d\u0430\u0441\u0442\u0440\u043e\u0439\u043a\u0430_shinobi_video_\u0441_\u043f\u043e\u043c\u043e\u0449\u044c\u044e_docker_compose&quot;,&quot;codeblockOffset&quot;:0,&quot;secid&quot;:1,&quot;range&quot;:&quot;1-506&quot;} -->
+<h3 class="sectionedit2" id="создание_и_настройка_файла_docker_compose">Создание и настройка файла Docker Compose</h3>
+<div class="level3">
+
+<p>
+После того, как Docker будет установлен, нужно создать корневую директорию для самого Shinobi (в данному случае я создаю папку в $HOME)  и папку для конфигурационных данных:
+</p>
+<pre class="code bash"><span class="kw2">mkdir</span> shinobi_nvr 
+<span class="kw2">mkdir</span> shinobi_nvr<span class="sy0">/</span>data </pre>
+
+<p>
+Следующим шагом будет создание файла компоновки docker-compose.yml.
+</p>
+<dl class="file">
+<dt><a href="/doku.php?do=export_code&amp;id=instructions:install_shinobi_docker&amp;codeblock=1" title="Скачать фрагмент кода" class="mediafile mf_yml">docker-compose.yml</a></dt>
+<dd><pre class="code file yaml"><span class="co3">version</span><span class="sy2">: </span><span class="st0">&quot;3&quot;</span><span class="co4">
+services</span>:<span class="co4">
+    shinobi</span>:<span class="co3">
+        image</span><span class="sy2">: </span>registry.gitlab.com/shinobi-systems/shinobi:dev<span class="co3">
+        container_name</span><span class="sy2">: </span>Shinobi<span class="co4">
+        volumes</span><span class="sy2">:
+</span>           - ./data/Shinobi/config:/config          <span class="co1">#required</span>
+           - ./data/Shinobi/customAutoLoad:/home/Shinobi/libs/customAutoLoad          <span class="co1">#required</span>
+           - ./data/Shinobi/database:/var/lib/mysql          <span class="co1">#required</span>
+           - ./data/Shinobi/videos:/home/Shinobi/videos          <span class="co1">#required</span>
+           - ./data/Shinobi/plugins:/home/Shinobi/plugins          <span class="co1">#required</span>
+           - /dev/shm/Shinobi/streams:/dev/shm/streams          <span class="co1">#required</span>
+           <span class="co1">#- ./data/records:/home/Shinobi/records          #optional (add new folder for stream records)</span><span class="co4">
+        ports</span><span class="sy2">:
+</span>           - 80:8080<span class="co3">
+        restart</span><span class="sy2">: </span>unless-stopped</pre>
+</dd></dl>
+
+<p>
+Сохраняем этот файл, запускаем с помощью следующей команды:
+</p>
+<pre class="code bash"><span class="kw2">sudo</span> docker compose up <span class="re5">-d</span></pre>
+
+</div>
+<!-- EDIT{&quot;target&quot;:&quot;section&quot;,&quot;name&quot;:&quot;\u0421\u043e\u0437\u0434\u0430\u043d\u0438\u0435 \u0438 \u043d\u0430\u0441\u0442\u0440\u043e\u0439\u043a\u0430 \u0444\u0430\u0439\u043b\u0430 Docker Compose&quot;,&quot;hid&quot;:&quot;\u0441\u043e\u0437\u0434\u0430\u043d\u0438\u0435_\u0438_\u043d\u0430\u0441\u0442\u0440\u043e\u0439\u043a\u0430_\u0444\u0430\u0439\u043b\u0430_docker_compose&quot;,&quot;codeblockOffset&quot;:0,&quot;secid&quot;:2,&quot;range&quot;:&quot;507-2029&quot;} -->
+<h3 class="sectionedit3" id="создание_нового_пользователя_для_доступа_к_shinobi">Создание нового пользователя для доступа к Shinobi</h3>
+<div class="level3">
+
+<p>
+После после загрузки и запуска контейнера заходим на веб-интерфейс Shinobi-сервера по адресу <a href="http://ip-or-domain/super" class="urlextern" title="http://ip-or-domain/super" rel="ugc nofollow">http://ip-or-domain/super</a>
+</p>
+
+<p>
+Логин и пароль по умолчанию для авторизации:
+</p>
+<pre class="code">Login: admin@shinobi.video
+Password: admin</pre>
+
+<p>
+Откроется страница конфигурации Shinobi. На данном этапе нужно создать нового пользователя. Что бы это сделать, нажать кнопку &lt;Add&gt;,  та заполнить поля:
+</p>
+<pre class="code">Email
+Password
+Password Again</pre>
+
+<p>
+и нажать клавишу &lt;Save&gt;
+</p>
+
+<p>
+<img src="/lib/exe/fetch.php?media=shinobi_new_accounts.png" class="mediacenter" loading="lazy" alt="" />
+</p>
+
+<p>
+Теперь мы можем войти непосредственно в сам веб-интерфейс Shinobi для добавления новых камер (здесь они называются мониторы).
+</p>
+
+</div>
+<!-- EDIT{&quot;target&quot;:&quot;section&quot;,&quot;name&quot;:&quot;\u0421\u043e\u0437\u0434\u0430\u043d\u0438\u0435 \u043d\u043e\u0432\u043e\u0433\u043e \u043f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044f \u0434\u043b\u044f \u0434\u043e\u0441\u0442\u0443\u043f\u0430 \u043a Shinobi&quot;,&quot;hid&quot;:&quot;\u0441\u043e\u0437\u0434\u0430\u043d\u0438\u0435_\u043d\u043e\u0432\u043e\u0433\u043e_\u043f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044f_\u0434\u043b\u044f_\u0434\u043e\u0441\u0442\u0443\u043f\u0430_\u043a_shinobi&quot;,&quot;codeblockOffset&quot;:3,&quot;secid&quot;:3,&quot;range&quot;:&quot;2030-3079&quot;} -->
+<h3 class="sectionedit4" id="добавление_новых_мониторов">Добавление новых мониторов</h3>
+<div class="level3">
+
+<p>
+Что бы войти на веб-интерфейс Shinobi, нужно перейти по адресу <a href="http://ip-or-domain" class="urlextern" title="http://ip-or-domain" rel="ugc nofollow">http://ip-or-domain</a> .
+</p>
+
+<p>
+Для добавление первой камеры первым делом вам нужно узнать RTSP-ссылку для вашей камеры, чаще всего она начинается следующим образом:
+</p>
+<pre class="code">rtsp://LOGIN:PASSWORD@XXX.XXX.XXX.XXX:YY/path/to/rtsp/stream</pre>
+
+<p>
+Что бы узнать точную RTSP-ссылку можно поискать на сайте производителя, либо воспользоваться <a href="https://hub.shinobi.video/explore" class="urlextern" title="https://hub.shinobi.video/explore" rel="ugc nofollow">данной</a> страницей с описанием и настройками для поддерживаемых камер.
+</p>
+
+<p>
+<img src="/lib/exe/fetch.php?media=shinobi_rtsp_settings.png" class="mediacenter" loading="lazy" alt="" />
+</p>
+
+<p>
+Исходя из этих данных, для камер производителя Imou полная RTSP-ссылка будет выглядеть следующим образом:
+</p>
+<pre class="code">rtsp://admin:admin@192.168.0.2:554/cam/realmonitor?channel=1&amp;subtype=0&amp;unicast=true&amp;proto=Onvif</pre>
+
+<p>
+Следующим шагом будет непосредственно добавление камеры, для этого нужно перейти в раздел &lt;Settings Monitor&gt; и указать минимальные параметры для работы. Я не буду перечисливать все параметры, укажу  только основные, которые использую я. Так же те параметры, которые были найдены для конкретного производителя камеры, пригодятся далее, на примере камеры Imou.
+</p>
+
+</div>
+
+<h5 id="identity">Identity</h5>
+<div class="level5">
+<pre class="code">Mode = Record # другие параметры - Disabled, Watch-Only, Record, Idle
+Name = Random Name # имя, которое будет присвоено камере
+Tags = Random Tags # Будет группировать мониторы на основе общего тега</pre>
+
+</div>
+
+<h5 id="connection">Connection</h5>
+<div class="level5">
+<pre class="code">Input Type = H.264 / H.265 / H.265+ # метод, который будет использоваться для видеопотока
+Full URL Path = rtsp://LOGIN:PASSWORD@XXX.XXX.XXX.XXX:YY/path/to/rtsp/stream # нашли это ранее
+ONVIF = True/False # если камера с поддержкой ONVIF, можно указать этот параметр</pre>
+
+</div>
+
+<h5 id="input">Input</h5>
+<div class="level5">
+<pre class="code">Accelerator =Yes # согласно настройкам, найденным ранее
+Acceleration Engine  # согласно настройкам, найденным ранее
+Video Decoder  # согласно настройкам, найденным ранее</pre>
+
+</div>
+
+<h5 id="stream">Stream</h5>
+<div class="level5">
+<pre class="code">Stream Type = Poseidon  # согласно настройкам, найденным ранее
+Video Codec = copy  # согласно настройкам, найденным ранее
+Audio Codec = copy  # согласно настройкам, найденным ранее</pre>
+
+<p>
+После ввода всех данных, сохраняем текущий монитор. Новый монитор должен отобразится на вкладке Monitor и на вкладке Live Grid.
+</p>
+
+<p>
+<img src="/lib/exe/fetch.php?w=600&amp;tok=7cca1f&amp;media=shinobi_live_grid.png" class="mediacenter" loading="lazy" alt="" width="600" />
+</p>
+
+<p>
+На этом можно считать законченной настройку и добавления новых мониторов на Shinobi-сервер
+</p>
+
+</div>
+<!-- EDIT{&quot;target&quot;:&quot;section&quot;,&quot;name&quot;:&quot;\u0414\u043e\u0431\u0430\u0432\u043b\u0435\u043d\u0438\u0435 \u043d\u043e\u0432\u044b\u0445 \u043c\u043e\u043d\u0438\u0442\u043e\u0440\u043e\u0432&quot;,&quot;hid&quot;:&quot;\u0434\u043e\u0431\u0430\u0432\u043b\u0435\u043d\u0438\u0435_\u043d\u043e\u0432\u044b\u0445_\u043c\u043e\u043d\u0438\u0442\u043e\u0440\u043e\u0432&quot;,&quot;codeblockOffset&quot;:5,&quot;secid&quot;:4,&quot;range&quot;:&quot;3080-&quot;} -->

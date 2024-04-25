@@ -1,0 +1,45 @@
+====== Стартовая страница ======
+
+==== Содержание: ====
+Здесь содержится разделы по разным направлениям, здесь указаны основные пункты, что бы увидеть больше, необходимо нажать на нужный раздел.
+== Термины ==   
+  * [[terms:ssh|Secure Shell (SSH)]] FIXME
+
+== Сетевые технологии ==
+  * [[network:routing|Маршрутизация]] 
+  * 
+
+== Операционные системы ==
+   * [[os:windows|Microsoft Windows]]
+     * [[os:windows:desktop|Window Desktop]]
+     * [[os:windows:server|Windows Server]]
+
+   * [[os:linux|Linux/Unix]]
+     * [[os:linux:ubuntu_srv|Ubuntu Server]]
+     * [[os:linux:pve|Proxmox]]
+
+== DevOps ==
+   * [[devops:containers|Контейнеризация и оркестрация]]
+     * Docker
+     * Podman
+     * Kubernetes  
+
+   * Виртуализация
+     * VirtualBox
+     * [[os:linux:pve|Proxmox]]
+
+   * CI/CD (системы непрерывной интеграции и развертывания)
+     * Jenkins
+
+   * Мониторинг
+     * Zabbix
+     * Prometheus/Grafana
+
+== Программирование ==
+   * Python
+    * Создание Telegram Bots на AIogram
+   * JavaScript
+
+==  Полезные инструкции ==
+   * [[instructions:install_chr_proxmox|Установка и настройка MikroTik RouterOS CHR на Proxmox]] FIXME
+   * [[instructions:install_shinobi_docker|Установка и настройка Shinobi Video с помощью Docker Compose]] (дописать добавление нового хранилища) FIXME
